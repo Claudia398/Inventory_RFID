@@ -1,0 +1,14 @@
+﻿@* @model WebApplication1.DatabaseProvider.Placement *@
+@model PlacementDTO;
+
+<h2>Delete Placement</h2>
+
+<p>Are you sure?</p>
+
+<form asp-action="Delete" method="post">
+
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit" class="btn btn-danger">Delete</button>
+
+</form>

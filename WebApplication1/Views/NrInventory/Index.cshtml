@@ -1,0 +1,44 @@
+﻿@model List<WebApplication1.DTO.NrInventoryDTO>
+
+<h2>Nr Inventory</h2>
+
+<a asp-action="Create" class="btn btn-primary">Add</a>
+
+<table class="table">
+    <tr>
+        <th>Serial</th>
+        <th>Name</th>
+        <th>Cost Center</th>
+        <th>Sub Inventory</th>
+        <th>Actions</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Serial</td>
+            <td>@item.Name</td>
+            <td>@item.CostCenterName</td>
+            @* <td>@Html.Raw(string.Join(",", item.SubInventory.Select(a => a.Name)))</td> *@
+            <td>
+                @if (item.SubInventory != null && item.SubInventory.Any())
+                {
+                    @string.Join(", ", item.SubInventory.Select(x => x.Name))
+                }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
+                <a class="btn btn-primary" onclick="BeginScan('@item.Id')">Scan RFID</a>
+            </td>
+        </tr>
+    }
+</table>
+
+
+<script>
+    function BeginScan(serialNumber) {
+        console.log(serialNumber);
+        
+    }
+</script>

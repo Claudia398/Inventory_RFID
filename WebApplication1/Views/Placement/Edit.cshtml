@@ -1,0 +1,17 @@
+﻿@* @model WebApplication1.DatabaseProvider.Placement *@
+@model PlacementDTO;
+
+<input type="hidden" asp-for="Id" />
+<h2>Edit Placement</h2>
+
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="Id" />
+
+    <input asp-for="Name" class="form-control" />
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">Save</button>
+
+</form>

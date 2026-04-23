@@ -1,0 +1,17 @@
+﻿
+@model PlacementDTO
+
+<h2>Add Placement</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="form-group">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">Save</button>
+
+</form>

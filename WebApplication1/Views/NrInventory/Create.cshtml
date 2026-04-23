@@ -1,0 +1,60 @@
+﻿@model WebApplication1.DTO.NrInventoryDTO
+
+<h2>Add NrInventory</h2>
+
+<form asp-action="Create" method="post">
+
+    <!-- 🔹 SERIAL -->
+    <div class="form-group">
+        <label>Serial</label>
+        <input asp-for="Serial" class="form-control" />
+    </div>
+
+    <!-- 🔹 NAME -->
+    <div class="form-group">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <!-- 🔹 COST CENTER -->
+    <div class="form-group">
+        <label>Cost Center</label>
+
+        <select name="CostCenterId" class="form-control">
+            <option value="">-- Select existing --</option>
+            @foreach (var item in ViewBag.CostCenters)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div>
+
+   @*  <div class="form-group">
+        <label>Or add new Cost Center</label>
+        <input name="NewCostCenterName" class="form-control" placeholder="ex: IT" />
+    </div> *@
+
+    <!-- 🔹 SUBINVENTORY -->
+ @*    <div class="form-group">
+        <label>SubInventory</label>
+
+        <select name="NrSubInventoryId" class="form-control">
+            <option value="">-- Select existing --</option>
+            @foreach (var item in ViewBag.SubInventories)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div> *@
+
+   @*  <div class="form-group">
+        <label>Or add new SubInventory</label>
+        <input name="SubInventoryInput" class="form-control" placeholder="ex: Casti" />
+    </div> *@
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+
+</form>

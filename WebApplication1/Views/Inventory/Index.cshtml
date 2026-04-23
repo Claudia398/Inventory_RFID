@@ -1,0 +1,40 @@
+﻿@model List<WebApplication1.DTO.InventoryDTO>
+
+<h2>Inventory</h2>
+
+<form asp-action="Scan" method="post">
+
+    <label>UID:</label>
+    <input type="text" name="uid" class="form-control" />
+
+    <label>Placement:</label>
+    <select name="placementId" asp-items="ViewBag.Placements" class="form-control"></select>
+
+    <br />
+
+    <button type="submit" class="btn btn-success">Perform Inventory</button>
+
+</form>
+
+<hr />
+
+<table class="table">
+    <tr>
+        <th>UID</th>
+        <th>Item</th>
+        <th>Placement</th>
+        <th>User</th>
+        <th>Updated</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Uid</td>
+            <td>@item.ItemName</td>
+            <td>@item.PlacementName</td>
+            <td>@item.Username</td>
+            <td>@item.Updated</td>
+        </tr>
+    }
+</table>
