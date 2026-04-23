@@ -284,6 +284,9 @@ namespace WebApplication1.Services
             }
         }
 
+
+
+
         internal void AssignRFIDToInventory(int id, string rFID)
         {
             var NrInventory = _context.NrInventories.Find(id);
