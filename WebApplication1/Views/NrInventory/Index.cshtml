@@ -19,7 +19,7 @@
             <td>@item.Serial</td>
             <td>@item.Name</td>
             <td>@item.CostCenterName</td>
-            @* <td>@Html.Raw(string.Join(",", item.SubInventory.Select(a => a.Name)))</td> *@
+            
             <td>
                 @if (item.SubInventory != null && item.SubInventory.Any())
                 {
@@ -37,8 +37,83 @@
 
 
 <script>
-    function BeginScan(serialNumber) {
-        console.log(serialNumber);
+    // function BeginScan(serialNumber) {
+    //     console.log(serialNumber);
         
-    }
+    // }
+
+@* nou 31.05.2026 *@
+let currentInventoryId = 0;
+
+async function BeginScan(id)
+{
+    currentInventoryId = id;
+
+    const device = await navigator.bluetooth.requestDevice({
+        filters: [{ name: 'ESP32_RFID' }],
+        optionalServices: [
+            '12345678-1234-1234-1234-1234567890ab'
+        ]
+    });
+
+    const server = await device.gatt.connect();
+
+    const service =
+        await server.getPrimaryService(
+            '12345678-1234-1234-1234-1234567890ab');
+
+    const characteristic =
+        await service.getCharacteristic(
+            'abcd1234-5678-5678-5678-abcdef123456');
+
+    await characteristic.startNotifications();
+
+    characteristic.addEventListener(
+        'characteristicvaluechanged',
+        OnRFIDRead);
+
+    alert("RFID Reader Connected");
+}
+@* nou 31.05.2026 *@
+async function OnRFIDRead(event)
+{
+    const text =
+        new TextDecoder().decode(event.target.value);
+
+    console.log(text);
+
+    const pcMatch =
+        text.match(/PC:\s*([0-9A-F ]+)/i);
+
+    const epcMatch =
+        text.match(/EPC:\s*([0-9A-F ]+)/i);
+
+    if(!pcMatch || !epcMatch)
+        return;
+
+    const pc =
+        pcMatch[1].replaceAll(" ", "");
+
+    const epc =
+        epcMatch[1].replaceAll(" ", "");
+
+    const rfid = `${pc}/${epc}`;
+
+    console.log(rfid);
+
+    await fetch(
+        '/NrInventory/AssignRFIDToInventory',
+        {
+            method: 'POST',
+            headers:
+            {
+                'Content-Type':
+                    'application/x-www-form-urlencoded'
+            },
+            body:
+                `Id=${currentInventoryId}&RFID=${rfid}`
+        });
+
+    alert("RFID assigned successfully");
+}
 </script>
