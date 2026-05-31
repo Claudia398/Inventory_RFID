@@ -2,7 +2,7 @@
 
 <h2>Inventory</h2>
 
-<form asp-action="Scan" method="post">
+<form asp-action="PerformInventory" method="post">
 
     <label>UID:</label>
     <input type="text" name="uid" class="form-control" />
@@ -12,8 +12,13 @@
 
     <br />
 
-    <button type="submit" class="btn btn-success">Perform Inventory</button>
-
+   @*  <button type="submit" class="btn btn-success">Perform Inventory</button> *@
+  @*  31.05.2026 *@
+    <button type="button"
+            class="btn btn-success"
+            onclick="BeginInventoryScan()">
+        Perform Inventory
+    </button>
 </form>
 
 <hr />
@@ -25,16 +30,90 @@
         <th>Placement</th>
         <th>User</th>
         <th>Updated</th>
+        <th>Status</th>
     </tr>
 
     @foreach (var item in Model)
     {
-        <tr>
+        <tr class="@(item.IsExpired ? "table-danger" : "table-success")">
+
             <td>@item.Uid</td>
             <td>@item.ItemName</td>
             <td>@item.PlacementName</td>
             <td>@item.Username</td>
             <td>@item.Updated</td>
+            <td>@item.Status</td>
         </tr>
     }
 </table>
+@* 31.05.2026 *@
+<script>
+
+    async function BeginInventoryScan() {
+        const placementId =
+            document.querySelector('[name="placementId"]').value;
+
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'ESP32_RFID' }],
+            optionalServices: [
+                '12345678-1234-1234-1234-1234567890ab'
+            ]
+        });
+
+        const server = await device.gatt.connect();
+
+        const service =
+            await server.getPrimaryService(
+                '12345678-1234-1234-1234-1234567890ab');
+
+        const characteristic =
+            await service.getCharacteristic(
+                'abcd1234-5678-5678-5678-abcdef123456');
+
+        await characteristic.startNotifications();
+
+        characteristic.addEventListener(
+            'characteristicvaluechanged',
+            function (event) {
+                OnInventoryRFIDRead(event, placementId);
+            });
+
+        alert("RFID Reader Connected");
+    }
+
+    async function OnInventoryRFIDRead(event, placementId) {
+        const text =
+            new TextDecoder().decode(event.target.value);
+
+        alert(text);
+
+        const pc = "3000";
+        const epc = "E28069150000401D63E6E03F";
+
+        const uid = `${pc}/${epc}`;
+
+        alert(uid);
+
+        try {
+            const response =
+                await fetch(
+                    '/Inventory/PerformInventory',
+                    {
+                        method: 'POST',
+                        headers:
+                        {
+                            'Content-Type':
+                                'application/x-www-form-urlencoded'
+                        },
+                        body:
+                            `uid=${uid}&placementId=${placementId}`
+                    });
+
+            alert("Status = " + response.status);
+        }
+        catch (ex) {
+            alert("ERROR: " + ex);
+        }
+    }
+
+</script>

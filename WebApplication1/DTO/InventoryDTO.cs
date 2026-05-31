@@ -10,5 +10,9 @@
         public string Username { get; set; }
 
         public DateTime? Updated { get; set; }
+        //31.05.2026
+        public string Status { get; set; }
+
+        public bool IsExpired { get; set; }
     }
 }

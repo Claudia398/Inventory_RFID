@@ -39,5 +39,12 @@ namespace WebApplication1.Controllers
             _service.UpdateScan(uid, placementId);
             return RedirectToAction("Index");
         }
+        //nou 31.05.2026
+        [HttpPost]
+        public IActionResult PerformInventory(string uid, int placementId)
+        {
+            _service.PerformInventory(uid, placementId);
+            return Ok();
+        }
     }
 }
