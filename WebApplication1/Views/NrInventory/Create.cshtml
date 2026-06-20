@@ -33,5 +33,8 @@
 
     <button type="submit" class="btn btn-primary">Save</button>
     <a asp-action="Index" class="btn btn-secondary">Back</a>
-
+@*     //15.06.2026 *@
+    <select asp-for="PlacementId"
+            asp-items="ViewBag.Placements">
+    </select>
 </form>

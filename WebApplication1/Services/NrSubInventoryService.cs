@@ -18,7 +18,11 @@ namespace WebApplication1.Services
                 .Select(x => new NrSubInventoryDTO
                 {
                     Id = x.Id,
-                    Name = x.Name
+                    Name = x.Name,
+                    //01.06.2026
+
+            InventorySerial = x.NrInventory.Serial,
+                    InventoryName = x.NrInventory.Name
                 })
                 .ToList();
         }

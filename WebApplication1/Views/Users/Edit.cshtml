@@ -9,12 +9,31 @@
     <div class="form-group">
         <label>Username</label>
         <input asp-for="Username" class="form-control" />
+      @*   //16.06.2026 *@
+      @*   <select name="RoleId" class="form-control">
+            <option value="">-- Select existing --</option>
+            @foreach (var item in ViewBag.Role)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select> *@
     </div>
 
     <br />
+    @*  //21.06.2026 *@
+    <div class="form-group">
+        <label>Rol</label>
+
+        <select asp-for="RoleId" class="form-control">
+            @foreach (var role in ViewBag.Roles)
+            {
+                <option value="@role.Id">@role.Name</option>
+            }
+        </select>
+    </div>
 
     <button type="submit" class="btn btn-primary">Save</button>
 
     <a asp-action="Index" class="btn btn-secondary">Back</a>
-
+ 
 </form>

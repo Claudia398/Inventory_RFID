@@ -10,9 +10,7 @@ public partial class NrInventory
     public string Serial { get; set; } = null!;
 
     public int? CostCenterId { get; set; }
-
     public string? Name { get; set; }
-
     public string? Rfid { get; set; }
 
     public virtual CostCenter? CostCenter { get; set; }

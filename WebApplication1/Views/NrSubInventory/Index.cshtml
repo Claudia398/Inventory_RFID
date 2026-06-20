@@ -1,10 +1,10 @@
 ﻿@model List<NrSubInventoryDTO>
 
-<h2>Nr Sub Inventory</h2>
+<h2>Sub Inventory</h2>
 
 <br />
 
-<table class="table">
+@* <table class="table">
     <tr>
         <th>Name</th>
         <th>Actions</th>
@@ -17,6 +17,33 @@
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
                 <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+    }
+</table> *@
+@* 01.06.2026 *@
+<table class="table">
+    <tr>
+        <th>Sub Inventory</th>
+        <th>Serial</th>
+        <th>Inventory Name</th>
+        <th>Actions</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.InventorySerial</td>
+            <td>@item.InventoryName</td>
+            <td>
+                <a asp-action="Edit"
+                   asp-route-id="@item.Id"
+                   class="btn btn-warning">Edit</a>
+
+                <a asp-action="Delete"
+                   asp-route-id="@item.Id"
+                   class="btn btn-danger">Delete</a>
             </td>
         </tr>
     }

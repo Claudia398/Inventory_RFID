@@ -9,7 +9,11 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
+    public int? RoleId { get; set; }
+
     public virtual ICollection<Inventory> InventoryCreatedBies { get; set; } = new List<Inventory>();
 
     public virtual ICollection<Inventory> InventoryUsers { get; set; } = new List<Inventory>();
+
+    public virtual Role? Role { get; set; }
 }

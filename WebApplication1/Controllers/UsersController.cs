@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.DTO;
 using WebApplication1.Services;
+using WebApplication1.DatabaseProvider;
 
 namespace WebApplication1.Controllers
 {
@@ -43,7 +45,8 @@ namespace WebApplication1.Controllers
             {
                 return NotFound();
             }
-
+            //21.06.2026
+            ViewBag.Roles = _service.GetRoles();
             return View(item);
         }
 

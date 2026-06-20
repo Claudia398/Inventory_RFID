@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Services;
 using WebApplication1.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
@@ -12,7 +13,7 @@ namespace WebApplication1.Controllers
         {
             _service = service;
         }
-
+        [Authorize(Roles = "User")]
         public IActionResult Index()
         {
             var data = _service.GetAll();

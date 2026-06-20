@@ -2,11 +2,14 @@ using Microsoft.AspNetCore.Authentication.Negotiate;
 using WebApplication1.DatabaseProvider;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Services;
+using WebApplication1;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<IClaimsTransformation,CustomClaimTransformer>();
 builder.Services.AddScoped<CostCenterService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PlacementService>();
@@ -41,10 +44,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .RequireAuthorization();
 
 app.Run();

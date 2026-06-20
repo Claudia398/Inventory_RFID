@@ -30,9 +30,99 @@ namespace WebApplication1.Services
 
         //31.05.2026
 
+        //public List<InventoryDTO> GetAll()
+        //{
+        //    var result = _context.NrInventories
+        //        .Select(n => new InventoryDTO
+        //        {
+        //            Id = n.Id,
+        //            Uid = n.Rfid,
+        //            ItemName = n.Name,
+
+        //            PlacementName = _context.Inventories
+        //                .Where(i => i.NrInventoryId == n.Id)
+        //                .OrderByDescending(i => i.Updated)
+        //                .Select(i => i.Placement != null ? i.Placement.Name : "")
+        //                .FirstOrDefault(),
+
+        //            Username = _context.Inventories
+        //                .Where(i => i.NrInventoryId == n.Id)
+        //                .OrderByDescending(i => i.Updated)
+        //                .Select(i => i.User != null ? i.User.Username : "")
+        //                .FirstOrDefault(),
+
+        //            Updated = _context.Inventories
+        //                .Where(i => i.NrInventoryId == n.Id)
+        //                .OrderByDescending(i => i.Updated)
+        //                .Select(i => i.Updated)
+        //                .FirstOrDefault()
+        //        })
+        //        .ToList();
+
+        //    foreach (var item in result)
+        //    {
+        //        item.IsExpired =
+        //            item.Updated == null ||
+        //            item.Updated.Value.AddMonths(6) < DateTime.Now;
+
+        //        item.Status =
+        //            item.IsExpired
+        //            ? "NOT SCANNED > 6 MONTHS"
+        //            : "OK";
+        //    }
+
+        //    return result;
+        //}
+        //14.06.2026
         public List<InventoryDTO> GetAll()
         {
             var result = _context.NrInventories
+                .Select(n => new InventoryDTO
+                {
+                    Id = n.Id,
+                    Uid = n.Rfid,
+                    ItemName = n.Name,
+
+                    PlacementName = _context.Inventories
+                        .Where(i => i.NrInventoryId == n.Id)
+                        .OrderByDescending(i => i.Updated)
+                        .Select(i => i.Placement != null ? i.Placement.Name : "")
+                        .FirstOrDefault(),
+
+                    Username = _context.Inventories
+                        .Where(i => i.NrInventoryId == n.Id)
+                        .OrderByDescending(i => i.Updated)
+                        .Select(i => i.User != null ? i.User.Username : "")
+                        .FirstOrDefault(),
+
+                    Updated = _context.Inventories
+                        .Where(i => i.NrInventoryId == n.Id)
+                        .OrderByDescending(i => i.Updated)
+                        .Select(i => i.Updated)
+                        .FirstOrDefault(),
+                })
+                .ToList();
+
+            foreach (var item in result)
+            {
+                item.IsExpired =
+                    item.Updated == null ||
+                    item.Updated.Value.AddMonths(6) < DateTime.Now;
+
+                item.Status =
+                    item.IsExpired
+                    ? "NOT SCANNED > 6 MONTHS"
+                    : "OK";
+            }
+
+            return result;
+        }
+        public List<InventoryDTO> GetByPlacement(int placementId)
+        {
+            var result = _context.NrInventories
+                .Where(n => _context.Inventories.Any(i =>
+                    i.NrInventoryId == n.Id &&
+                    i.PlacementId == placementId))
                 .Select(n => new InventoryDTO
                 {
                     Id = n.Id,
@@ -73,7 +163,7 @@ namespace WebApplication1.Services
 
             return result;
         }
-        //
+
 
         public void UpdateScan(string uid, int placementId)
         {
@@ -87,7 +177,7 @@ namespace WebApplication1.Services
         }
 
         //nou 31.05.2026
-        public void PerformInventory(string uid, int placementId)
+        public void PerformInventory(string uid, int placementId, int? userid)
         {
             // 1. Caut RFID-ul
             var nrInventory = _context.NrInventories
@@ -115,14 +205,15 @@ namespace WebApplication1.Services
 
                 inventory = new Inventory
                 {
-                    Id = newId,
+                   
                     Uid = uid,
                     NrInventoryId = nrInventory.Id,
                     PlacementId = placementId,
                     Active = true,
                     Created = DateTime.Now,
                     Updated = DateTime.Now,
-                    CreatedById = 1
+                    CreatedById = 1,
+                    UserId = userid
                 };
 
                 _context.Inventories.Add(inventory);
@@ -139,6 +230,7 @@ namespace WebApplication1.Services
             inventory.PlacementId = placementId;
             inventory.Updated = DateTime.Now;
             inventory.Uid = uid;
+            inventory.UserId = userid;
 
             _context.SaveChanges();
 

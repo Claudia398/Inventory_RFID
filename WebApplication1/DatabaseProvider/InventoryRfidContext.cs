@@ -25,6 +25,8 @@ public partial class InventoryRfidContext : DbContext
 
     public virtual DbSet<Placement> Placements { get; set; }
 
+    public virtual DbSet<Role> Roles { get; set; }
+
     public virtual DbSet<ScanRfid> ScanRfids { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -49,11 +51,7 @@ public partial class InventoryRfidContext : DbContext
         {
             entity.ToTable("inventory");
 
-            entity.HasIndex(e => e.Uid, "IX_inventory").IsUnique();
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Active)
                 .HasDefaultValue(true)
                 .HasColumnName("active");
@@ -142,6 +140,16 @@ public partial class InventoryRfidContext : DbContext
                 .HasColumnName("name");
         });
 
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.ToTable("roles");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasColumnName("name");
+        });
+
         modelBuilder.Entity<ScanRfid>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_Scan_RFID");
@@ -166,9 +174,14 @@ public partial class InventoryRfidContext : DbContext
             entity.ToTable("users");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.Username)
                 .HasMaxLength(150)
                 .HasColumnName("username");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_users_roles");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -1,98 +1,148 @@
-﻿@model List<WebApplication1.DTO.InventoryDTO>
+﻿@model List<WebApplication1.DTO.PlacementDTO>
 
 <h2>Inventory</h2>
-
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.8/css/dataTables.dataTables.min.css" "></link>
 <form asp-action="PerformInventory" method="post">
 
-    <label>UID:</label>
+@* <label>UID:</label>
     <input type="text" name="uid" class="form-control" />
-
+    *@
     <label>Placement:</label>
-    <select name="placementId" asp-items="ViewBag.Placements" class="form-control"></select>
-
+    <select name="placementId" asp-items="ViewBag.Placement" class="form-control">
+@foreach (var option in Model)
+{
+        <option value="@option.Id">@option.Name</option>
+}
+    </select>
     <br />
 
-   @*  <button type="submit" class="btn btn-success">Perform Inventory</button> *@
-  @*  31.05.2026 *@
+@*  <button type="submit" class="btn btn-success">Perform Inventory</button> *@
+@*  31.05.2026 *@
     <button type="button"
             class="btn btn-success"
             onclick="BeginInventoryScan()">
         Perform Inventory
     </button>
+@* //14.06.2026 *@
+    <button type="button"
+            class="btn btn-primary ms-2"
+            onclick="ShowResults()">
+        Finish Inventory
+    </button>
 </form>
 
 <hr />
-
-<table class="table">
-    <tr>
-        <th>UID</th>
-        <th>Item</th>
-        <th>Placement</th>
-        <th>User</th>
-        <th>Updated</th>
-        <th>Status</th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-        <tr class="@(item.IsExpired ? "table-danger" : "table-success")">
-
-            <td>@item.Uid</td>
-            <td>@item.ItemName</td>
-            <td>@item.PlacementName</td>
-            <td>@item.Username</td>
-            <td>@item.Updated</td>
-            <td>@item.Status</td>
+<table class="table" id="table">
+    <thead>
+        <tr>
+            <th>UID</th>
+            <th>Item</th>
+            <th>Placement</th>
+            <th>User</th>
+            <th>Updated</th>
+            <th>Status</th>
         </tr>
-    }
+    </thead>
 </table>
+</div>
 @* 31.05.2026 *@
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
+
 <script>
+    let connectedDevice = null;
+    let connectedServer = null;
+    let table = null;
+    $(document).ready(function () {
+        table = new DataTable('#table', {
+            ajax: {
+                url: '/Inventory/GetInventoryData',
+                dataSrc: 'data',
+                method: 'post',
+            },
+            columns: [
+                { data: 'uid' },
+                { data: 'itemName' },
+                { data: 'placementName' },
+                { data: 'username' },
+                {
+                    data: 'updated',
+                    render: function (data) {
+                        if (!data) return '';
+                        const date = new Date(data);
+                        return date.toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        });
+                    }
+                },
+                { data: 'status' }
+            ],
+            rowCallback: function (row, data) {
+                console.log(data);
+                if (data.isExpired) {
+                    $(row).addClass("table-danger");
+                } else {
+                    $(row).addClass("table-success");
+                }
+            }
+        });
+    })
 
     async function BeginInventoryScan() {
-        const placementId =
-            document.querySelector('[name="placementId"]').value;
+        const placementId = document.querySelector('[name="placementId"]').value;
 
         const device = await navigator.bluetooth.requestDevice({
             filters: [{ name: 'ESP32_RFID' }],
-            optionalServices: [
-                '12345678-1234-1234-1234-1234567890ab'
-            ]
+            optionalServices: ['12345678-1234-1234-1234-1234567890ab']
         });
 
         const server = await device.gatt.connect();
 
-        const service =
-            await server.getPrimaryService(
-                '12345678-1234-1234-1234-1234567890ab');
+        // Save references for later disconnect
+        connectedDevice = device;
+        connectedServer = server;
 
-        const characteristic =
-            await service.getCharacteristic(
-                'abcd1234-5678-5678-5678-abcdef123456');
+        const service = await server.getPrimaryService('12345678-1234-1234-1234-1234567890ab');
+        const characteristic = await service.getCharacteristic('abcd1234-5678-5678-5678-abcdef123456');
 
         await characteristic.startNotifications();
 
-        characteristic.addEventListener(
-            'characteristicvaluechanged',
-            function (event) {
-                OnInventoryRFIDRead(event, placementId);
-            });
+        characteristic.addEventListener('characteristicvaluechanged', function (event) {
+            OnInventoryRFIDRead(event, placementId);
+        });
 
         alert("RFID Reader Connected");
     }
 
+    function DisconnectRFID() {
+        if (connectedDevice && connectedDevice.gatt.connected) {
+            connectedDevice.gatt.disconnect();
+            console.log("RFID Reader Disconnected");
+        }
+    }
+    window.addEventListener("beforeunload", () => {
+        DisconnectRFID();
+    });
     async function OnInventoryRFIDRead(event, placementId) {
         const text =
             new TextDecoder().decode(event.target.value);
-
-        alert(text);
-
-        const pc = "3000";
-        const epc = "E28069150000401D63E6E03F";
+        //text = RSSI: -38 dBm|PC: 30  00 |EPC: E2  80  69  15  00  00  50  1D  63  E6  E4  3F
+        //split dupa |
+        let params = text.split("|");
+        console.log(text);
+        console.log(params);
+        let pc = params[1].split(":")[1].replaceAll(" ", "");
+        let epc = params[2].split(":")[1].replaceAll(" ", "");
 
         const uid = `${pc}/${epc}`;
-
-        alert(uid);
+        console.log(uid);
 
         try {
             const response =
@@ -108,12 +158,22 @@
                         body:
                             `uid=${uid}&placementId=${placementId}`
                     });
-
-            alert("Status = " + response.status);
+            if (response.ok) {
+                table.ajax.reload();
+            }
         }
         catch (ex) {
             alert("ERROR: " + ex);
         }
+    }
+    //14.06.2026
+    function ShowResults() {
+
+        const placementId =
+            document.querySelector('[name="placementId"]').value;
+
+        window.location.href =
+            '/Inventory?placementId=' + placementId;
     }
 
 </script>

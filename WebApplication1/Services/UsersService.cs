@@ -1,4 +1,5 @@
-﻿using WebApplication1.DatabaseProvider;
+﻿using Microsoft.EntityFrameworkCore;
+using WebApplication1.DatabaseProvider;
 using WebApplication1.DTO;
 
 namespace WebApplication1.Services
@@ -18,8 +19,10 @@ namespace WebApplication1.Services
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,
+                    RoleId = u.RoleId,
                     Username = u.Username
                 })
+
                 .ToList();
         }
 
@@ -30,6 +33,7 @@ namespace WebApplication1.Services
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,
+                    RoleId = u.RoleId,
                     Username = u.Username
                 })
                 .FirstOrDefault();
@@ -54,7 +58,7 @@ namespace WebApplication1.Services
             if (user != null)
             {
                 user.Username = userDto.Username;
-
+                user.RoleId = userDto.RoleId;
                 _context.Users.Update(user);
                 _context.SaveChanges();
             }
@@ -69,5 +73,23 @@ namespace WebApplication1.Services
                 _context.SaveChanges();
             }
         }
+
+        internal UserDTO? GetByUserName(string? username)
+        {
+            return _context.Users
+                .Where(x => x.Username == username)
+                .Select(u => new UserDTO
+                {
+                    Id = u.Id,
+                    Username = u.Username
+                })
+                .FirstOrDefault();
+        }
+        //21.06.2026
+        public List<Role> GetRoles()
+        {
+            return _context.Roles.ToList();
+        }
     }
 }
+ 
